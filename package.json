@@ -32,5 +32,17 @@
   "files": [
     "lib/**/*.js"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "scripts": {
+    "check": "node --check lib/index.js && node --check lib/client.js",
+    "test": "node scripts/smoke-host.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/TenMilesSwordGod/dsh-token-stats.git"
+  },
+  "homepage": "https://github.com/TenMilesSwordGod/dsh-token-stats#readme",
+  "bugs": {
+    "url": "https://github.com/TenMilesSwordGod/dsh-token-stats/issues"
+  }
 }

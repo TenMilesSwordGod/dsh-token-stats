@@ -1,0 +1,61 @@
+name: release
+
+# Packs the plugin on a version tag push and attaches the .tgz to a GitHub
+# Release. Free on public repositories (unlimited minutes); install it into
+# a profile with scripts/deploy-release.sh — no Node toolchain or build
+# needed on the target machine.
+#
+# Usage: git tag v0.1.0 && git push origin v0.1.0
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Syntax check
+        run: node --check lib/index.js && node --check lib/client.js && node --check scripts/smoke-host.mjs
+
+      - name: Stub harness deps for offline smoke
+        run: |
+          mkdir -p node_modules/@deepseek-ai/dsh-session node_modules/@deepseek-ai/dsh-home-paths
+          cat > node_modules/@deepseek-ai/dsh-session/package.json <<'JSON'
+          {"name":"@deepseek-ai/dsh-session","type":"module","main":"index.js","exports":{".":"./index.js"}}
+          JSON
+          echo 'export const decodeStorageRecord = (v) => [v];' > node_modules/@deepseek-ai/dsh-session/index.js
+          cat > node_modules/@deepseek-ai/dsh-home-paths/package.json <<'JSON'
+          {"name":"@deepseek-ai/dsh-home-paths","type":"module","main":"index.js","exports":{".":"./index.js"}}
+          JSON
+          echo 'import { join } from "node:path"; export const dshHomePath = (...seg) => join(process.env.DSH_HOME || (process.env.HOME + "/.dsh"), ...seg);' > node_modules/@deepseek-ai/dsh-home-paths/index.js
+
+      - name: Smoke test (aggregation + off-peak pricing + price API)
+        run: node scripts/smoke-host.mjs
+
+      - name: Pack
+        run: |
+          mkdir -p dist
+          npm pack --pack-destination "$GITHUB_WORKSPACE/dist"
+
+      - name: Normalize artifact name
+        run: mv dist/deepseek-ai-dsh-token-stats-*.tgz dist/dsh-token-stats.tgz
+
+      - name: Publish release with artifact
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/dsh-token-stats.tgz
+          generate_release_notes: true
