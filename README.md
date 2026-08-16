@@ -14,7 +14,25 @@ DeepSeek Harness Web UI 插件：按 **provider / model** 统计每天消耗的 
 
 ## 安装
 
-### 1. 安装包到 web profile
+### 0. 从 GitHub Release 安装（推荐）
+
+每个 `v*` 标签会自动构建并发布 `dsh-token-stats.tgz`（GitHub Actions），一条命令装进 profile：
+
+```bash
+bash <(curl -sL https://raw.githubusercontent.com/TenMilesSwordGod/dsh-token-stats/main/scripts/deploy-release.sh)
+```
+
+或克隆后手动执行：
+
+```bash
+git clone https://github.com/TenMilesSwordGod/dsh-token-stats.git
+./dsh-token-stats/scripts/deploy-release.sh         # 默认 latest release + ~/.dsh/profiles/web
+./dsh-token-stats/scripts/deploy-release.sh v0.1.0  # 指定版本
+```
+
+脚本会：下载 Release 产物 → 注册 `cordis.patch.yml` 插件行（幂等）→ `pnpm add` 装进 profile。之后**重启一次 `dsh web`** 即可。
+
+### 1. 手动安装（开发用）
 
 **方式 A（推荐，跟随 profile 依赖管理）**
 
