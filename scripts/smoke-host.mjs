@@ -154,5 +154,17 @@ await routes2['/token-stats/prices']({ method: 'GET', url: '/token-stats/prices'
 const table2 = JSON.parse(res2.body)
 pass('prices persisted across instances', table2.models['deepseek-v4-flash']?.input === 0.14 && table2.models['deepseek-v4-flash']?.source === 'openrouter')
 
+// ── 7. manual entry WITHOUT offPeak must not break the scan (regression) ────
+const noOff = await call('/token-stats/prices', 'POST', {
+  models: { 'deepseek-v4-flash': { input: 1, output: 2, cacheRead: 0.1, cacheWrite: 1 } },
+})
+pass('POST without offPeak 200', noOff.status === 200, `status ${noOff.status}`)
+const statsAfterNoOff = await call('/token-stats')
+const dayKeysAfter = Object.keys(statsAfterNoOff.json.all)
+pass('stats still aggregated after no-offPeak save', dayKeysAfter.length >= 1 && Object.values(statsAfterNoOff.json.all).reduce((s, b) => s + b.total, 0) > 0, `days ${dayKeysAfter.length}`)
+// off-peak sample now at full rate: peak 1M*1 + 0.5M*2 = 2.0 ; off 1M*1 = 1.0 ; total 3.0
+const costNoOff = Object.values(statsAfterNoOff.json.all).reduce((s, b) => s + b.cost, 0)
+pass('cost without offPeak uses full rate', Math.abs(costNoOff - 3.0) < 1e-9, `cost ${costNoOff}`)
+
 delete process.env.DSH_HOME
 console.log(process.exitCode ? '\nsmoke FAILED' : '\nsmoke OK')
