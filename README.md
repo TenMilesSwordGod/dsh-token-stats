@@ -139,6 +139,7 @@ dsh-token-stats/
 - 修改 `lib/*.js` 后，需同步到已安装副本（`cp lib/*.js <profile-node_modules>/@deepseek-ai/dsh-token-stats/lib/`）或重新 `pnpm install`
 - **宿主端**改动（`index.js`）需重启 `dsh web`；**客户端**改动（`client.js`）刷新页面即可
 - 快速检查：`node --check lib/index.js lib/client.js`
+- 测试：`npm test`（`scripts/smoke-host.mjs` 冒烟 + `test/host.test.mjs` 单元测试，覆盖计价/价格表/日志扫描/路由/缓存/同步）
 - 无头浏览器 E2E：可用本地 HTTP 服务（代理真实 `/token-stats`）+ Chrome CDP 驱动，验证面板/费用/价格弹窗渲染
 
 ## License

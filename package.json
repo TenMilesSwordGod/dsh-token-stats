@@ -35,7 +35,7 @@
   "license": "MIT",
   "scripts": {
     "check": "node --check lib/index.js && node --check lib/client.js",
-    "test": "node scripts/smoke-host.mjs"
+    "test": "node scripts/smoke-host.mjs && node --test"
   },
   "repository": {
     "type": "git",
